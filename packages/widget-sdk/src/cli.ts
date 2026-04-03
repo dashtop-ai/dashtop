@@ -62,65 +62,54 @@ function init(projectName?: string) {
     JSON.stringify(config, null, 2)
   );
 
-  // src/widget.ts
+  // src/widget.ts — uses DashtopApp base class
   writeFileSync(
     join(srcDir, "widget.ts"),
-    `import { defineWidget } from '@dashtop/widget-sdk';
+    `import { DashtopApp } from '@dashtop/widget-sdk';
 
 /**
  * ${config.name}
  *
- * This is your widget's render function.
- * It receives a root DOM element and props from the dashboard.
+ * Extend DashtopApp to get the standard layout for free:
+ * - Header with icon, name, status, and pill actions
+ * - Scrollable content area (you fill this)
+ * - Chat input (you handle messages)
+ *
+ * Just implement renderContent() and onChat().
  */
 
-interface MyWidgetConfig {
-  message: string;
-  color: string;
+interface MyConfig {
+  greeting: string;
 }
 
-export default defineWidget<MyWidgetConfig>((root, { config, isEditing, onConfigChange }) => {
-  // Create your widget UI
-  const container = document.createElement('div');
-  container.style.cssText = \`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    padding: 16px;
-    font-family: system-ui, sans-serif;
-    color: \${config.color || '#333'};
-  \`;
+class ${name.replace(/[^a-zA-Z]/g, '')}App extends DashtopApp<MyConfig> {
+  name = "${config.name}";
+  icon = "🚀";
+  color = "#7c3aed";
+  placeholder = "Ask me anything...";
 
-  const heading = document.createElement('h2');
-  heading.textContent = config.message || 'Hello from ${config.name}!';
-  heading.style.cssText = 'margin: 0 0 8px 0; font-size: 18px;';
-
-  const info = document.createElement('p');
-  info.textContent = isEditing ? '(Edit mode — configure in settings)' : 'Widget is running!';
-  info.style.cssText = 'margin: 0; font-size: 13px; opacity: 0.6;';
-
-  container.appendChild(heading);
-  container.appendChild(info);
-
-  if (isEditing) {
-    const btn = document.createElement('button');
-    btn.textContent = 'Change Color';
-    btn.style.cssText = 'margin-top: 12px; padding: 6px 12px; border-radius: 6px; border: 1px solid #ccc; cursor: pointer; font-size: 13px;';
-    btn.onclick = () => {
-      const colors = ['#7c3aed', '#ef4444', '#22c55e', '#3b82f6', '#f59e0b'];
-      const next = colors[Math.floor(Math.random() * colors.length)];
-      onConfigChange({ color: next });
-    };
-    container.appendChild(btn);
+  renderContent(container: HTMLElement) {
+    const greeting = this.config.greeting || "Hello!";
+    container.innerHTML = \`
+      <div style="padding: 16px;">
+        <h2 style="font-size: 16px; margin: 0 0 8px;">\${greeting}</h2>
+        <p style="font-size: 13px; color: #666; margin: 0;">
+          This is your app. Edit renderContent() to change what appears here.
+        </p>
+        <p style="font-size: 12px; color: #999; margin-top: 12px;">
+          Type in the chat below to test onChat().
+        </p>
+      </div>
+    \`;
   }
 
-  root.appendChild(container);
+  async onChat(message: string): Promise<string> {
+    // In production: call an AI API via proxyFetch()
+    return \`You said: "\${message}" — connect this to an AI API!\`;
+  }
+}
 
-  // Optional: return cleanup function
-  return () => { root.innerHTML = ''; };
-});
+export default new ${name.replace(/[^a-zA-Z]/g, '')}App().asWidget();
 `
   );
 

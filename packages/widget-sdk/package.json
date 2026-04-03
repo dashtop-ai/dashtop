@@ -20,6 +20,10 @@
     "./vite": {
       "types": "./dist/vite-plugin.d.ts",
       "import": "./dist/vite-plugin.js"
+    },
+    "./app": {
+      "types": "./dist/app.d.ts",
+      "import": "./dist/app.js"
     }
   },
   "files": [

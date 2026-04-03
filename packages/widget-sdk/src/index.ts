@@ -150,5 +150,6 @@ export function defineWidget<TConfig = Record<string, unknown>>(
   return render;
 }
 
-// Re-export bridge for convenience
+// Re-export bridge and app base class
 export { initBridge } from "./bridge";
+export { DashtopApp } from "./app";
