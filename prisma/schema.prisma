@@ -1,0 +1,235 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ── Auth.js Models ────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ── User ──────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  username      String?   @unique
+  bio           String?
+  isCreator     Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts            Account[]
+  sessions            Session[]
+  dashboards          Dashboard[]
+  marketplaceListings MarketplaceListing[]
+  reviews             Review[]
+  purchases           Purchase[]
+  apiKeys             ApiKey[]
+  installedPackages   InstalledPackage[]
+}
+
+// ── Dashboard ─────────────────────────────────
+
+model Dashboard {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  config      String   // JSON: DashboardConfig
+  thumbnail   String?
+  theme       String   @default("default")
+  visibility  String   @default("private") // private | public | unlisted
+  isTemplate  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  ownerId String
+  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  sourceListingId String?
+  sourceListing   MarketplaceListing? @relation("InstalledFrom", fields: [sourceListingId], references: [id], onDelete: SetNull)
+
+  listing MarketplaceListing? @relation("ListedDashboard")
+
+  @@index([ownerId])
+  @@index([visibility])
+}
+
+// ── Widget Definition ─────────────────────────
+
+model WidgetDefinition {
+  id            String   @id @default(cuid())
+  type          String   @unique
+  name          String
+  description   String?
+  category      String
+  icon          String?
+  defaultConfig String   // JSON
+  defaultSize   String   // JSON: { w, h, minW, minH, maxW, maxH }
+  isBuiltIn     Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  creatorId     String?
+
+  listing MarketplaceListing? @relation("ListedWidget")
+
+  @@index([category])
+}
+
+// ── Marketplace ───────────────────────────────
+
+model MarketplaceListing {
+  id              String   @id @default(cuid())
+  title           String
+  description     String
+  longDescription String?
+  type            String   // dashboard | widget | widget-pack | config
+  category        String
+  tags            String   // JSON array
+  price           Float    @default(0)
+  pricingModel    String   @default("free") // free | paid | tip-jar
+  currency        String   @default("USD")
+  previewImages   String?  // JSON array
+  downloadCount   Int      @default(0)
+  isPublished     Boolean  @default(true)
+  isFeatured      Boolean  @default(false)
+  version         String   @default("1.0.0")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  creatorId String
+  creator   User   @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+
+  dashboardId        String?    @unique
+  dashboard          Dashboard? @relation("ListedDashboard", fields: [dashboardId], references: [id], onDelete: SetNull)
+
+  widgetDefinitionId String?          @unique
+  widgetDefinition   WidgetDefinition? @relation("ListedWidget", fields: [widgetDefinitionId], references: [id], onDelete: SetNull)
+
+  configPayload String? // JSON for config/widget-pack types
+
+  reviews             Review[]
+  purchases           Purchase[]
+  installedDashboards Dashboard[] @relation("InstalledFrom")
+  installedPackages   InstalledPackage[] @relation("InstalledFromListing")
+
+  avgRating   Float @default(0)
+  reviewCount Int   @default(0)
+
+  @@index([type])
+  @@index([category])
+  @@index([creatorId])
+  @@index([pricingModel])
+  @@index([isFeatured])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int
+  title     String?
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId    String
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  listingId String
+  listing   MarketplaceListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, listingId])
+  @@index([listingId])
+}
+
+model Purchase {
+  id        String   @id @default(cuid())
+  price     Float
+  tipAmount Float    @default(0)
+  createdAt DateTime @default(now())
+
+  userId    String
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  listingId String
+  listing   MarketplaceListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([listingId])
+}
+
+// ── Installed Packages ────────────────────────
+
+model InstalledPackage {
+  id         String   @id @default(cuid())
+  packageId  String   // "@creator/package-name"
+  type       String   // theme | preset | template | widget
+  version    String   // Semver
+  manifest   String   // Full manifest JSON
+  payload    String?  // JSON for theme/preset/template
+  bundlePath String?  // Disk path for widget bundles
+  status     String   @default("active") // active | disabled | error
+  installedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId    String
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  listingId String?
+  listing   MarketplaceListing? @relation("InstalledFromListing", fields: [listingId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, packageId])
+  @@index([userId])
+  @@index([type])
+}
+
+model ApiKey {
+  id           String    @id @default(cuid())
+  name         String
+  provider     String
+  encryptedKey String
+  lastUsed     DateTime?
+  createdAt    DateTime  @default(now())
+
+  userId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}

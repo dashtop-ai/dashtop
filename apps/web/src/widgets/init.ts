@@ -1,0 +1,20 @@
+// Import all widget configs to trigger registration
+import "./clock/config";
+import "./notes/config";
+import "./web-bookmark/config";
+import "./ai-chat/config";
+import "./prompt-library/config";
+import "./usage-analytics/config";
+import "./api-key-manager/config";
+import "./model-comparison/config";
+import "./image-generator/config";
+import "./music-audio/config";
+import "./writing-assistant/config";
+import "./style-presets/config";
+import "./inspiration-feed/config";
+import "./meeting-summarizer/config";
+import "./email-triage/config";
+import "./document-analyzer/config";
+import "./task-automation/config";
+import "./calendar-ai/config";
+import "./news-summary/config";

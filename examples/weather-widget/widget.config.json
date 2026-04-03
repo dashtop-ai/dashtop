@@ -1,0 +1,26 @@
+{
+  "name": "Weather Widget",
+  "widgetType": "weather",
+  "version": "1.0.0",
+  "description": "Shows current weather with animated icons for any city",
+  "category": "utility",
+  "tags": ["weather", "utility", "forecast"],
+  "author": {
+    "name": "Dashtop Examples",
+    "username": "dashtop-examples"
+  },
+  "permissions": [],
+  "defaultConfig": {
+    "city": "New York",
+    "units": "imperial"
+  },
+  "defaultSize": { "w": 3, "h": 3 },
+  "minSize": { "w": 2, "h": 2 },
+  "settingsSchema": {
+    "type": "object",
+    "properties": {
+      "city": { "type": "string", "title": "City", "default": "New York" },
+      "units": { "type": "string", "title": "Units", "enum": ["imperial", "metric"], "default": "imperial" }
+    }
+  }
+}
