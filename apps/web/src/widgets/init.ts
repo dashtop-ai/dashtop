@@ -18,3 +18,8 @@ import "./document-analyzer/config";
 import "./task-automation/config";
 import "./calendar-ai/config";
 import "./news-summary/config";
+import "./sudoku/config";
+import "./concept-explainer/config";
+import "./quiz-me/config";
+import "./workout-planner/config";
+import "./exercise-log/config";

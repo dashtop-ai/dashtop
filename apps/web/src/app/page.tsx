@@ -1,323 +1,353 @@
-import Link from "next/link";
+"use client";
+
+import { useState, useRef, useEffect } from "react";
 import {
-  LayoutDashboard,
-  Users,
-  Zap,
-  ArrowRight,
-  Blocks,
-  GitFork,
-  Sparkles,
-  Brain,
-  Image,
-  Briefcase,
-  Key,
-  Heart,
-  Globe,
-  Gamepad2,
-  BookOpen,
-  TrendingUp,
+  Send,
+  RefreshCw,
+  Play,
+  Square,
+  Newspaper,
+  MessageSquare,
+  StickyNote,
+  MoreHorizontal,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { SiteHeader } from "@/components/layout/site-header";
-import { SiteFooter } from "@/components/layout/site-footer";
 
-const PRINCIPLES = [
-  {
-    icon: Key,
-    title: "Bring Your Own Keys",
-    description:
-      "Your API key is your identity and your compute. No subscriptions, no platform fees. You own your AI.",
-  },
-  {
-    icon: GitFork,
-    title: "Fork, Remix, Improve",
-    description:
-      "Every app is open. Clone it, remix it with AI, make it yours. Share your improvements back to the community.",
-  },
-  {
-    icon: Users,
-    title: "Built Together",
-    description:
-      "15+ apps built by the community. Anyone can contribute — developers write code, users remix with AI.",
-  },
-  {
-    icon: Sparkles,
-    title: "AI-Powered Everything",
-    description:
-      "Don't like a widget? Tell AI to change it. Describe what you want and it builds it. No coding required.",
-  },
-  {
-    icon: Blocks,
-    title: "Drag, Drop, Done",
-    description:
-      "19+ widgets across AI, productivity, creative, finance, and more. Arrange your perfect layout in seconds.",
-  },
-  {
-    icon: Globe,
-    title: "Open & Free Forever",
-    description:
-      "No walled garden. Export your dashboards, share your configs, take your data anywhere. This is yours.",
-  },
-];
+// ── Types ─────────────────────────────────────
 
-const APPS = [
-  {
-    name: "News Aggregator",
-    description: "AI-curated daily digest from your favorite sources",
-    icon: Globe,
-    gradient: "from-amber-500 to-orange-600",
-    contributors: 4,
-  },
-  {
-    name: "Stock Broker",
-    description: "Portfolio tracking, market analysis, trade signals",
-    icon: TrendingUp,
-    gradient: "from-emerald-500 to-green-600",
-    contributors: 3,
-  },
-  {
-    name: "Mind Games",
-    description: "Chess, Go, Sudoku with AI opponents and training",
-    icon: Gamepad2,
-    gradient: "from-violet-500 to-purple-600",
-    contributors: 5,
-  },
-  {
-    name: "Learn Languages",
-    description: "AI conversation partner, vocab builder, immersion",
-    icon: BookOpen,
-    gradient: "from-blue-500 to-cyan-600",
-    contributors: 6,
-  },
-  {
-    name: "AI Power User",
-    description: "Multi-model chat, prompts, model comparison",
-    icon: Brain,
-    gradient: "from-pink-500 to-rose-600",
-    contributors: 8,
-  },
-  {
-    name: "Creative Studio",
-    description: "Image gen, writing tools, music, inspiration",
-    icon: Image,
-    gradient: "from-fuchsia-500 to-pink-600",
-    contributors: 7,
-  },
-  {
-    name: "Fitness Coach",
-    description: "Workouts, nutrition, progress tracking, AI coaching",
-    icon: Heart,
-    gradient: "from-red-500 to-rose-600",
-    contributors: 3,
-  },
-  {
-    name: "Business Ops",
-    description: "Meetings, email triage, docs, task automation",
-    icon: Briefcase,
-    gradient: "from-slate-500 to-zinc-600",
-    contributors: 5,
-  },
-];
+interface AppMessage {
+  role: "user" | "app";
+  text: string;
+}
 
-const STEPS = [
-  {
-    step: "01",
-    title: "Paste Your API Key",
-    description:
-      "Claude Code or Codex — your key is your login. No sign-up forms, no OAuth. Just paste and go.",
-  },
-  {
-    step: "02",
-    title: "Pick an App or Build One",
-    description:
-      "Install a community app, start from a blank canvas, or remix any existing app with AI.",
-  },
-  {
-    step: "03",
-    title: "Make It Yours",
-    description:
-      "Drag widgets, tweak settings, ask AI to modify anything. Then share your creation with the world.",
-  },
-];
+interface AppState {
+  id: string;
+  name: string;
+  icon: typeof Newspaper;
+  color: string;
+  status: "idle" | "running" | "stopped";
+  content: string[];
+  chat: AppMessage[];
+  placeholder: string;
+}
+
+// ── App Card ──────────────────────────────────
+
+function AppCard({
+  app,
+  onAction,
+  onChat,
+}: {
+  app: AppState;
+  onAction: (id: string, action: "run" | "stop" | "update") => void;
+  onChat: (id: string, message: string) => void;
+}) {
+  const [input, setInput] = useState("");
+  const contentRef = useRef<HTMLDivElement>(null);
+  const Icon = app.icon;
+
+  const statusColor =
+    app.status === "running"
+      ? "bg-green-500"
+      : app.status === "stopped"
+        ? "bg-red-400"
+        : "bg-zinc-400";
+
+  const handleSend = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+    onChat(app.id, input.trim());
+    setInput("");
+    setTimeout(() => {
+      contentRef.current?.scrollTo({ top: contentRef.current.scrollHeight, behavior: "smooth" });
+    }, 100);
+  };
+
+  return (
+    <div className="flex flex-col bg-card border rounded-xl overflow-hidden h-full">
+      {/* Header + pill */}
+      <div className="flex items-center justify-between px-3 py-2 border-b">
+        <div className="flex items-center gap-2">
+          <div className={`w-7 h-7 rounded-lg ${app.color} flex items-center justify-center`}>
+            <Icon className="h-3.5 w-3.5 text-white" />
+          </div>
+          <div>
+            <span className="text-xs font-medium">{app.name}</span>
+            <div className="flex items-center gap-1">
+              <span className={`w-1.5 h-1.5 rounded-full ${statusColor}`} />
+              <span className="text-[10px] text-muted-foreground capitalize">
+                {app.status}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-0.5 bg-muted rounded-full px-0.5 py-0.5">
+          <button
+            onClick={() => onAction(app.id, "update")}
+            className="p-1 rounded-full hover:bg-background transition-colors"
+            title="Update"
+          >
+            <RefreshCw className="h-3 w-3" />
+          </button>
+          <button
+            onClick={() => onAction(app.id, "run")}
+            className="p-1 rounded-full hover:bg-background transition-colors text-green-600"
+            title="Run"
+          >
+            <Play className="h-3 w-3" />
+          </button>
+          <button
+            onClick={() => onAction(app.id, "stop")}
+            className="p-1 rounded-full hover:bg-background transition-colors text-red-500"
+            title="Stop"
+          >
+            <Square className="h-3 w-3" />
+          </button>
+          <button
+            className="p-1 rounded-full hover:bg-background transition-colors"
+            title="More"
+          >
+            <MoreHorizontal className="h-3 w-3" />
+          </button>
+        </div>
+      </div>
+
+      {/* Content area */}
+      <div ref={contentRef} className="flex-1 overflow-auto p-3 space-y-1.5 min-h-0">
+        {/* App content */}
+        {app.content.map((line, i) => (
+          <div key={`c-${i}`} className="text-xs leading-relaxed text-muted-foreground">
+            {line}
+          </div>
+        ))}
+
+        {/* Chat messages */}
+        {app.chat.map((msg, i) => (
+          <div
+            key={`m-${i}`}
+            className={`text-xs leading-relaxed ${
+              msg.role === "user"
+                ? "text-foreground font-medium"
+                : "text-muted-foreground"
+            }`}
+          >
+            {msg.role === "user" ? (
+              <span className="text-primary">you:</span>
+            ) : (
+              <span className={app.color.replace("bg-", "text-")}>ai:</span>
+            )}{" "}
+            {msg.text}
+          </div>
+        ))}
+
+        {app.content.length === 0 && app.chat.length === 0 && (
+          <p className="text-muted-foreground text-xs text-center py-6">
+            Hit <span className="font-mono bg-muted px-1 rounded text-[10px]">Run</span> or type below
+          </p>
+        )}
+      </div>
+
+      {/* Chat input */}
+      <form onSubmit={handleSend} className="flex items-center gap-1.5 px-2 py-2 border-t">
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder={app.placeholder}
+          className="flex-1 bg-muted/50 rounded-lg px-2.5 py-1.5 text-xs outline-none placeholder:text-muted-foreground/60 focus:bg-muted"
+        />
+        <button
+          type="submit"
+          disabled={!input.trim()}
+          className="p-1.5 rounded-lg bg-primary text-primary-foreground disabled:opacity-20 hover:opacity-90 transition-opacity shrink-0"
+        >
+          <Send className="h-3 w-3" />
+        </button>
+      </form>
+    </div>
+  );
+}
+
+// ── Main Page ─────────────────────────────────
 
 export default function HomePage() {
+  const [authStatus, setAuthStatus] = useState<string | null>(null);
+
+  // Auto-detect Claude Code / Codex credentials on load
+  useEffect(() => {
+    fetch("/api/auth/auto")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.authenticated) {
+          setAuthStatus(`Connected via ${data.provider === "anthropic" ? "Claude Code" : "Codex"}`);
+        } else {
+          setAuthStatus("No AI keys detected — paste one at /login");
+        }
+      })
+      .catch(() => setAuthStatus(null));
+  }, []);
+
+  const [apps, setApps] = useState<AppState[]>([
+    {
+      id: "chat",
+      name: "AI Chat",
+      icon: MessageSquare,
+      color: "bg-violet-500",
+      status: "running",
+      placeholder: "Ask anything...",
+      content: [],
+      chat: [
+        { role: "app", text: "Hello! I'm your AI assistant. Ask me anything." },
+      ],
+    },
+    {
+      id: "news",
+      name: "News Feed",
+      icon: Newspaper,
+      color: "bg-amber-500",
+      status: "running",
+      placeholder: "Search news, add sources...",
+      content: [
+        "🔴 OpenAI announces GPT-5 with reasoning chains — 2h ago",
+        "🟡 Rust 2.0 ships with 40% faster compiles — 3h ago",
+        "🔴 EU AI Act enforcement begins — 4h ago",
+        "🟡 Next.js 17 preview: actions overhaul — 5h ago",
+        "🟢 Figma acquires AI startup for $400M — 6h ago",
+      ],
+      chat: [],
+    },
+    {
+      id: "notes",
+      name: "Notes",
+      icon: StickyNote,
+      color: "bg-blue-500",
+      status: "idle",
+      placeholder: "Add a note, ask to organize...",
+      content: [
+        "📌 Project ideas",
+        "   Build a habit tracker widget",
+        "   Explore tool use API",
+        "📌 Meeting notes — Monday",
+        "   TypeScript for all widgets",
+        "   Launch target: end of month",
+      ],
+      chat: [],
+    },
+  ]);
+
+  const handleAction = (id: string, action: "run" | "stop" | "update") => {
+    setApps((prev) =>
+      prev.map((app) => {
+        if (app.id !== id) return app;
+        switch (action) {
+          case "run":
+            return { ...app, status: "running" as const };
+          case "stop":
+            return { ...app, status: "stopped" as const, content: [], chat: [] };
+          case "update":
+            return { ...app, status: "running" as const };
+          default:
+            return app;
+        }
+      })
+    );
+  };
+
+  const handleChat = async (id: string, message: string) => {
+    // Add user message + "thinking" indicator immediately
+    setApps((prev) =>
+      prev.map((app) => {
+        if (app.id !== id) return app;
+        return {
+          ...app,
+          status: "running" as const,
+          chat: [
+            ...app.chat,
+            { role: "user" as const, text: message },
+            { role: "app" as const, text: "..." },
+          ],
+        };
+      })
+    );
+
+    // Get current chat history for context
+    const currentApp = apps.find((a) => a.id === id);
+    const history = currentApp?.chat || [];
+
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message, appId: id, history }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        // Fall back to mock if not logged in or API fails
+        const fallback = data.error || "Something went wrong. Are you logged in?";
+        setApps((prev) =>
+          prev.map((app) => {
+            if (app.id !== id) return app;
+            const chat = [...app.chat];
+            chat[chat.length - 1] = { role: "app" as const, text: fallback };
+            return { ...app, chat };
+          })
+        );
+        return;
+      }
+
+      // Replace "..." with real response
+      setApps((prev) =>
+        prev.map((app) => {
+          if (app.id !== id) return app;
+          const chat = [...app.chat];
+          chat[chat.length - 1] = { role: "app" as const, text: data.text };
+          return { ...app, chat };
+        })
+      );
+    } catch {
+      setApps((prev) =>
+        prev.map((app) => {
+          if (app.id !== id) return app;
+          const chat = [...app.chat];
+          chat[chat.length - 1] = {
+            role: "app" as const,
+            text: "Connection failed. Check your network.",
+          };
+          return { ...app, chat };
+        })
+      );
+    }
+  };
+
   return (
-    <div className="flex flex-col min-h-screen">
-      <SiteHeader />
+    <div className="flex flex-col h-screen bg-background">
+      {/* Top bar */}
+      <header className="flex items-center justify-between px-4 py-2 border-b">
+        <span className="text-sm font-semibold tracking-tight">dashtop</span>
+        <span className="text-[11px] text-muted-foreground">
+          {authStatus ? (
+            <span className="flex items-center gap-1.5">
+              <span className={`w-1.5 h-1.5 rounded-full ${authStatus.includes("Claude") || authStatus.includes("Codex") ? "bg-green-500" : "bg-zinc-400"}`} />
+              {authStatus}
+            </span>
+          ) : (
+            "connecting..."
+          )}
+        </span>
+      </header>
 
-      <main className="flex-1">
-        {/* Hero */}
-        <section className="container py-16 sm:py-24 text-center">
-          <Badge variant="secondary" className="mb-4">
-            Open source &middot; Free forever &middot; Bring your own keys
-          </Badge>
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl max-w-4xl mx-auto leading-tight">
-            Let&apos;s build the{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-pink-600 to-amber-500">
-              future of AI
-            </span>{" "}
-            together
-          </h1>
-          <p className="mt-5 text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Open AI dashboards that anyone can build, remix, and share.
-            Bring your own API keys. Everything is free.
-            The community builds the apps — AI helps everyone contribute.
-          </p>
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Button size="lg" render={<Link href="/login" />}>
-              Start Building
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-            <Button size="lg" variant="outline" render={<Link href="/community" />}>
-              Explore Apps
-            </Button>
-          </div>
-          <p className="mt-4 text-xs text-muted-foreground">
-            Just paste your Anthropic or OpenAI key. That&apos;s it.
-          </p>
-        </section>
-
-        {/* How it works */}
-        <section className="border-y bg-muted/30">
-          <div className="container py-16">
-            <h2 className="text-2xl font-bold text-center mb-10">
-              Three Steps. Zero Friction.
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {STEPS.map((step) => (
-                <div key={step.step} className="text-center">
-                  <div className="text-3xl font-bold text-primary/20 mb-2">
-                    {step.step}
-                  </div>
-                  <h3 className="text-lg font-semibold mb-1">{step.title}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {step.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Principles */}
-        <section className="container py-16">
-          <h2 className="text-2xl font-bold text-center mb-2">
-            How We Build
-          </h2>
-          <p className="text-center text-muted-foreground mb-10">
-            An open platform where everyone contributes and everyone benefits.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {PRINCIPLES.map((p) => (
-              <Card key={p.title} className="group hover:border-primary/30 transition-colors">
-                <CardHeader>
-                  <p.icon className="h-8 w-8 mb-2 text-primary group-hover:scale-110 transition-transform" />
-                  <CardTitle className="text-base">{p.title}</CardTitle>
-                  <CardDescription className="text-sm">
-                    {p.description}
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
-        </section>
-
-        {/* Community Apps */}
-        <section className="border-y bg-muted/30">
-          <div className="container py-16">
-            <h2 className="text-2xl font-bold text-center mb-2">
-              Community Apps
-            </h2>
-            <p className="text-center text-muted-foreground mb-10">
-              Built by people like you. Fork any app. Remix with AI. Make it yours.
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {APPS.map((app) => (
-                <Card
-                  key={app.name}
-                  className="overflow-hidden group hover:shadow-lg transition-all hover:-translate-y-0.5"
-                >
-                  <div
-                    className={`h-24 bg-gradient-to-br ${app.gradient} flex items-center justify-center`}
-                  >
-                    <app.icon className="h-10 w-10 text-white/80 group-hover:scale-110 transition-transform" />
-                  </div>
-                  <CardHeader className="p-4">
-                    <CardTitle className="text-sm">{app.name}</CardTitle>
-                    <CardDescription className="text-xs">
-                      {app.description}
-                    </CardDescription>
-                    <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
-                      <Users className="h-3 w-3" />
-                      {app.contributors} contributors
-                    </div>
-                  </CardHeader>
-                </Card>
-              ))}
-            </div>
-            <div className="text-center mt-8">
-              <Button variant="outline" render={<Link href="/community" />}>
-                See all apps
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </section>
-
-        {/* Remix CTA */}
-        <section className="container py-16">
-          <div className="max-w-3xl mx-auto text-center">
-            <Sparkles className="h-10 w-10 text-violet-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold mb-3">
-              Don&apos;t like something? Remix it.
-            </h2>
-            <p className="text-muted-foreground mb-2 max-w-xl mx-auto">
-              Every widget, every app can be changed with a single prompt.
-              Tell AI what you want — it modifies the code, packages it, and installs
-              your personalized version. No coding required.
-            </p>
-            <p className="text-sm text-muted-foreground italic">
-              &ldquo;Add stock prices to my news feed&rdquo; &mdash; done in 10 seconds.
-            </p>
-          </div>
-        </section>
-
-        {/* Final CTA */}
-        <section className="border-t bg-muted/30">
-          <div className="container py-20 text-center">
-            <div className="max-w-xl mx-auto">
-              <h2 className="text-3xl font-bold mb-3">
-                The future of AI is{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-pink-600">
-                  something we build together
-                </span>
-              </h2>
-              <p className="text-muted-foreground mb-8">
-                Everyone gets an AI dashboard. Everyone can build one.
-                Bring your keys. Join the community.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                <Button size="lg" render={<Link href="/login" />}>
-                  Start Building — It&apos;s Free
-                </Button>
-                <Button size="lg" variant="outline" render={<Link href="https://github.com/dashtop-ai/dashtop" />}>
-                  <GitFork className="mr-2 h-4 w-4" />
-                  View on GitHub
-                </Button>
-              </div>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <SiteFooter />
+      {/* App grid */}
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3 p-3 min-h-0">
+        {apps.map((app) => (
+          <AppCard
+            key={app.id}
+            app={app}
+            onAction={handleAction}
+            onChat={handleChat}
+          />
+        ))}
+      </div>
     </div>
   );
 }

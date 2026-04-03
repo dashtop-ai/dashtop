@@ -1,280 +1,330 @@
-import Link from "next/link";
+"use client";
+
+import { useState, useRef } from "react";
 import {
-  LayoutDashboard,
-  Store,
-  Zap,
-  ArrowRight,
-  Blocks,
-  Palette,
-  Share2,
-  Brain,
-  Image,
-  Briefcase,
+  Send,
+  RefreshCw,
+  Play,
+  Square,
+  Newspaper,
+  MessageSquare,
+  StickyNote,
+  MoreHorizontal,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { SiteHeader } from "@/components/layout/site-header";
-import { SiteFooter } from "@/components/layout/site-footer";
 
-const FEATURES = [
-  {
-    icon: Blocks,
-    title: "Drag & Drop Widgets",
-    description:
-      "18+ widgets for AI chat, image generation, analytics, productivity, and more. Arrange your perfect layout.",
-  },
-  {
-    icon: Store,
-    title: "Marketplace",
-    description:
-      "Browse, install, and trade dashboard templates and widgets. Free, paid, and tip-jar pricing.",
-  },
-  {
-    icon: Palette,
-    title: "Themes & Customization",
-    description:
-      "7 built-in themes from Midnight to Neon. Every dashboard is uniquely yours.",
-  },
-  {
-    icon: Share2,
-    title: "Export & Share",
-    description:
-      "Export your dashboard as JSON. Import configs from others. Trade setups with the community.",
-  },
-  {
-    icon: Zap,
-    title: "Creator Economy",
-    description:
-      "Become a creator. Publish your dashboards. Build a following. Earn from your configs.",
-  },
-  {
-    icon: LayoutDashboard,
-    title: "Multi-Dashboard",
-    description:
-      "One for work, one for creative projects, one for AI research. Switch between dashboards instantly.",
-  },
-];
+// ── Types ─────────────────────────────────────
 
-const TEMPLATES = [
-  {
-    name: "AI Power User",
-    description:
-      "Multi-model chat, prompt library, usage analytics, model comparison",
-    category: "AI & LLM",
-    icon: Brain,
-    gradient: "from-violet-500 to-purple-600",
-    widgets: ["AI Chat", "Prompt Library", "Model Comparison", "Usage Analytics", "API Keys"],
-    installs: "342",
-    rating: "4.7",
-  },
-  {
-    name: "Creative Studio",
-    description:
-      "Image generation, writing assistant, music tools, inspiration feed",
-    category: "Creative",
-    icon: Image,
-    gradient: "from-pink-500 to-rose-600",
-    widgets: ["Image Generator", "Writing Assistant", "Music & Audio", "Style Presets", "Inspiration"],
-    installs: "215",
-    rating: "4.5",
-  },
-  {
-    name: "Business Ops",
-    description:
-      "Meeting summarizer, email triage, document analyzer, task automation",
-    category: "Productivity",
-    icon: Briefcase,
-    gradient: "from-blue-500 to-cyan-600",
-    widgets: ["Meeting Summary", "Email Triage", "Doc Analyzer", "Task Automation", "Calendar AI"],
-    installs: "178",
-    rating: "4.8",
-  },
-];
+interface AppMessage {
+  role: "user" | "app";
+  text: string;
+}
 
-const STEPS = [
-  {
-    step: "01",
-    title: "Browse or Create",
-    description:
-      "Pick a template from the marketplace or start with a blank canvas.",
-  },
-  {
-    step: "02",
-    title: "Add Widgets",
-    description:
-      "Drag and drop from 18+ widgets — AI chat, analytics, creative tools, and more.",
-  },
-  {
-    step: "03",
-    title: "Customize & Share",
-    description:
-      "Apply themes, configure widgets, export your config, or publish to the marketplace.",
-  },
-];
+interface AppState {
+  id: string;
+  name: string;
+  icon: typeof Newspaper;
+  color: string;
+  status: "idle" | "running" | "stopped";
+  content: string[];
+  chat: AppMessage[];
+  placeholder: string;
+}
+
+// ── App Card ──────────────────────────────────
+
+function AppCard({
+  app,
+  onAction,
+  onChat,
+}: {
+  app: AppState;
+  onAction: (id: string, action: "run" | "stop" | "update") => void;
+  onChat: (id: string, message: string) => void;
+}) {
+  const [input, setInput] = useState("");
+  const contentRef = useRef<HTMLDivElement>(null);
+  const Icon = app.icon;
+
+  const statusColor =
+    app.status === "running"
+      ? "bg-green-500"
+      : app.status === "stopped"
+        ? "bg-red-400"
+        : "bg-zinc-400";
+
+  const handleSend = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+    onChat(app.id, input.trim());
+    setInput("");
+    setTimeout(() => {
+      contentRef.current?.scrollTo({ top: contentRef.current.scrollHeight, behavior: "smooth" });
+    }, 100);
+  };
+
+  return (
+    <div className="flex flex-col bg-card border rounded-xl overflow-hidden h-full">
+      {/* Header + pill */}
+      <div className="flex items-center justify-between px-3 py-2 border-b">
+        <div className="flex items-center gap-2">
+          <div className={`w-7 h-7 rounded-lg ${app.color} flex items-center justify-center`}>
+            <Icon className="h-3.5 w-3.5 text-white" />
+          </div>
+          <div>
+            <span className="text-xs font-medium">{app.name}</span>
+            <div className="flex items-center gap-1">
+              <span className={`w-1.5 h-1.5 rounded-full ${statusColor}`} />
+              <span className="text-[10px] text-muted-foreground capitalize">
+                {app.status}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-0.5 bg-muted rounded-full px-0.5 py-0.5">
+          <button
+            onClick={() => onAction(app.id, "update")}
+            className="p-1 rounded-full hover:bg-background transition-colors"
+            title="Update"
+          >
+            <RefreshCw className="h-3 w-3" />
+          </button>
+          <button
+            onClick={() => onAction(app.id, "run")}
+            className="p-1 rounded-full hover:bg-background transition-colors text-green-600"
+            title="Run"
+          >
+            <Play className="h-3 w-3" />
+          </button>
+          <button
+            onClick={() => onAction(app.id, "stop")}
+            className="p-1 rounded-full hover:bg-background transition-colors text-red-500"
+            title="Stop"
+          >
+            <Square className="h-3 w-3" />
+          </button>
+          <button
+            className="p-1 rounded-full hover:bg-background transition-colors"
+            title="More"
+          >
+            <MoreHorizontal className="h-3 w-3" />
+          </button>
+        </div>
+      </div>
+
+      {/* Content area */}
+      <div ref={contentRef} className="flex-1 overflow-auto p-3 space-y-1.5 min-h-0">
+        {/* App content */}
+        {app.content.map((line, i) => (
+          <div key={`c-${i}`} className="text-xs leading-relaxed text-muted-foreground">
+            {line}
+          </div>
+        ))}
+
+        {/* Chat messages */}
+        {app.chat.map((msg, i) => (
+          <div
+            key={`m-${i}`}
+            className={`text-xs leading-relaxed ${
+              msg.role === "user"
+                ? "text-foreground font-medium"
+                : "text-muted-foreground"
+            }`}
+          >
+            {msg.role === "user" ? (
+              <span className="text-primary">you:</span>
+            ) : (
+              <span className={app.color.replace("bg-", "text-")}>ai:</span>
+            )}{" "}
+            {msg.text}
+          </div>
+        ))}
+
+        {app.content.length === 0 && app.chat.length === 0 && (
+          <p className="text-muted-foreground text-xs text-center py-6">
+            Hit <span className="font-mono bg-muted px-1 rounded text-[10px]">Run</span> or type below
+          </p>
+        )}
+      </div>
+
+      {/* Chat input */}
+      <form onSubmit={handleSend} className="flex items-center gap-1.5 px-2 py-2 border-t">
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder={app.placeholder}
+          className="flex-1 bg-muted/50 rounded-lg px-2.5 py-1.5 text-xs outline-none placeholder:text-muted-foreground/60 focus:bg-muted"
+        />
+        <button
+          type="submit"
+          disabled={!input.trim()}
+          className="p-1.5 rounded-lg bg-primary text-primary-foreground disabled:opacity-20 hover:opacity-90 transition-opacity shrink-0"
+        >
+          <Send className="h-3 w-3" />
+        </button>
+      </form>
+    </div>
+  );
+}
+
+// ── Main Page ─────────────────────────────────
 
 export default function HomePage() {
+  const [apps, setApps] = useState<AppState[]>([
+    {
+      id: "chat",
+      name: "AI Chat",
+      icon: MessageSquare,
+      color: "bg-violet-500",
+      status: "running",
+      placeholder: "Ask anything...",
+      content: [],
+      chat: [
+        { role: "app", text: "Hello! I'm your AI assistant. Ask me anything." },
+      ],
+    },
+    {
+      id: "news",
+      name: "News Feed",
+      icon: Newspaper,
+      color: "bg-amber-500",
+      status: "running",
+      placeholder: "Search news, add sources...",
+      content: [
+        "🔴 OpenAI announces GPT-5 with reasoning chains — 2h ago",
+        "🟡 Rust 2.0 ships with 40% faster compiles — 3h ago",
+        "🔴 EU AI Act enforcement begins — 4h ago",
+        "🟡 Next.js 17 preview: actions overhaul — 5h ago",
+        "🟢 Figma acquires AI startup for $400M — 6h ago",
+      ],
+      chat: [],
+    },
+    {
+      id: "notes",
+      name: "Notes",
+      icon: StickyNote,
+      color: "bg-blue-500",
+      status: "idle",
+      placeholder: "Add a note, ask to organize...",
+      content: [
+        "📌 Project ideas",
+        "   Build a habit tracker widget",
+        "   Explore tool use API",
+        "📌 Meeting notes — Monday",
+        "   TypeScript for all widgets",
+        "   Launch target: end of month",
+      ],
+      chat: [],
+    },
+  ]);
+
+  const handleAction = (id: string, action: "run" | "stop" | "update") => {
+    setApps((prev) =>
+      prev.map((app) => {
+        if (app.id !== id) return app;
+        switch (action) {
+          case "run":
+            return { ...app, status: "running" as const };
+          case "stop":
+            return { ...app, status: "stopped" as const, content: [], chat: [] };
+          case "update":
+            return { ...app, status: "running" as const };
+          default:
+            return app;
+        }
+      })
+    );
+  };
+
+  const handleChat = async (id: string, message: string) => {
+    // Add user message + "thinking" indicator immediately
+    setApps((prev) =>
+      prev.map((app) => {
+        if (app.id !== id) return app;
+        return {
+          ...app,
+          status: "running" as const,
+          chat: [
+            ...app.chat,
+            { role: "user" as const, text: message },
+            { role: "app" as const, text: "..." },
+          ],
+        };
+      })
+    );
+
+    // Get current chat history for context
+    const currentApp = apps.find((a) => a.id === id);
+    const history = currentApp?.chat || [];
+
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message, appId: id, history }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        // Fall back to mock if not logged in or API fails
+        const fallback = data.error || "Something went wrong. Are you logged in?";
+        setApps((prev) =>
+          prev.map((app) => {
+            if (app.id !== id) return app;
+            const chat = [...app.chat];
+            chat[chat.length - 1] = { role: "app" as const, text: fallback };
+            return { ...app, chat };
+          })
+        );
+        return;
+      }
+
+      // Replace "..." with real response
+      setApps((prev) =>
+        prev.map((app) => {
+          if (app.id !== id) return app;
+          const chat = [...app.chat];
+          chat[chat.length - 1] = { role: "app" as const, text: data.text };
+          return { ...app, chat };
+        })
+      );
+    } catch {
+      setApps((prev) =>
+        prev.map((app) => {
+          if (app.id !== id) return app;
+          const chat = [...app.chat];
+          chat[chat.length - 1] = {
+            role: "app" as const,
+            text: "Connection failed. Check your network.",
+          };
+          return { ...app, chat };
+        })
+      );
+    }
+  };
+
   return (
-    <div className="flex flex-col min-h-screen">
-      <SiteHeader />
+    <div className="flex flex-col h-screen bg-background">
+      {/* Top bar */}
+      <header className="flex items-center justify-between px-4 py-2 border-b">
+        <span className="text-sm font-semibold tracking-tight">dashtop</span>
+        <span className="text-[11px] text-muted-foreground">
+          bring your keys, build together
+        </span>
+      </header>
 
-      <main className="flex-1">
-        {/* Hero */}
-        <section className="container py-16 sm:py-24 text-center">
-          <Badge variant="secondary" className="mb-4">
-            18+ widgets &middot; 7 themes &middot; Marketplace
-          </Badge>
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl max-w-3xl mx-auto">
-            Your AI.{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-pink-600 to-amber-500">
-              Your Dashboard.
-            </span>
-          </h1>
-          <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Build personalized AI dashboards with drag-and-drop widgets.
-            Install community templates. Trade and sell your configurations.
-          </p>
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Button size="lg" render={<Link href="/marketplace" />}>
-              Browse Marketplace
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-            <Button size="lg" variant="outline" render={<Link href="/dashboard" />}>
-              Create Dashboard
-            </Button>
-          </div>
-        </section>
-
-        {/* How it works */}
-        <section className="border-y bg-muted/30">
-          <div className="container py-16">
-            <h2 className="text-2xl font-bold text-center mb-10">
-              How It Works
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {STEPS.map((step) => (
-                <div key={step.step} className="text-center">
-                  <div className="text-3xl font-bold text-primary/20 mb-2">
-                    {step.step}
-                  </div>
-                  <h3 className="text-lg font-semibold mb-1">{step.title}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {step.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Features grid */}
-        <section className="container py-16">
-          <h2 className="text-2xl font-bold text-center mb-2">
-            Everything You Need
-          </h2>
-          <p className="text-center text-muted-foreground mb-10">
-            A complete platform for building, sharing, and trading AI dashboards.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {FEATURES.map((feature) => (
-              <Card key={feature.title} className="group hover:border-primary/30 transition-colors">
-                <CardHeader>
-                  <feature.icon className="h-8 w-8 mb-2 text-primary group-hover:scale-110 transition-transform" />
-                  <CardTitle className="text-base">{feature.title}</CardTitle>
-                  <CardDescription className="text-sm">
-                    {feature.description}
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
-        </section>
-
-        {/* Example Templates */}
-        <section className="border-y bg-muted/30">
-          <div className="container py-16">
-            <h2 className="text-2xl font-bold text-center mb-2">
-              Featured Templates
-            </h2>
-            <p className="text-center text-muted-foreground mb-10">
-              Pre-built dashboards ready to install and customize.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {TEMPLATES.map((template) => (
-                <Card
-                  key={template.name}
-                  className="overflow-hidden group hover:shadow-lg transition-shadow"
-                >
-                  <div
-                    className={`h-36 bg-gradient-to-br ${template.gradient} flex items-center justify-center relative`}
-                  >
-                    <template.icon className="h-14 w-14 text-white/80 group-hover:scale-110 transition-transform" />
-                    <div className="absolute top-3 right-3 flex gap-1">
-                      <Badge className="bg-white/20 text-white border-0 backdrop-blur-sm text-xs">
-                        {template.installs} installs
-                      </Badge>
-                    </div>
-                  </div>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between mb-1">
-                      <Badge variant="secondary" className="text-xs">
-                        {template.category}
-                      </Badge>
-                      <span className="text-xs text-muted-foreground">
-                        ★ {template.rating}
-                      </span>
-                    </div>
-                    <CardTitle className="text-lg">{template.name}</CardTitle>
-                    <CardDescription className="text-sm">
-                      {template.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <div className="px-6 pb-4">
-                    <div className="flex flex-wrap gap-1">
-                      {template.widgets.map((w) => (
-                        <Badge key={w} variant="outline" className="text-xs">
-                          {w}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* CTA */}
-        <section className="container py-20 text-center">
-          <div className="max-w-xl mx-auto">
-            <h2 className="text-3xl font-bold mb-3">
-              The future of AI is{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-pink-600">
-                personal
-              </span>
-            </h2>
-            <p className="text-muted-foreground mb-8">
-              Everyone will have their own AI dashboard. Start building yours
-              today.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Button size="lg" render={<Link href="/login" />}>
-                Get Started — It&apos;s Free
-              </Button>
-              <Button size="lg" variant="outline" render={<Link href="/marketplace" />}>
-                Explore Marketplace
-              </Button>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <SiteFooter />
+      {/* App grid */}
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3 p-3 min-h-0">
+        {apps.map((app) => (
+          <AppCard
+            key={app.id}
+            app={app}
+            onAction={handleAction}
+            onChat={handleChat}
+          />
+        ))}
+      </div>
     </div>
   );
 }
