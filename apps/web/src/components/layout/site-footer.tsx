@@ -9,14 +9,18 @@ export function SiteFooter() {
           <LayoutDashboard className="h-4 w-4" />
           <span>Dashtop</span>
           <span>&middot;</span>
-          <span>AI Dashboard Marketplace</span>
+          <span>Build the future of AI together</span>
         </div>
         <nav className="flex items-center gap-4 text-sm text-muted-foreground">
           <Link href="/marketplace" className="hover:text-foreground transition-colors">
-            Marketplace
+            Explore Apps
           </Link>
-          <Link href="/about" className="hover:text-foreground transition-colors">
-            About
+          <Link
+            href="https://github.com/dashtop-ai/dashtop"
+            className="hover:text-foreground transition-colors"
+            target="_blank"
+          >
+            GitHub
           </Link>
         </nav>
       </div>

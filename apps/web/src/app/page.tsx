@@ -1,15 +1,21 @@
 import Link from "next/link";
 import {
   LayoutDashboard,
-  Store,
+  Users,
   Zap,
   ArrowRight,
   Blocks,
-  Palette,
-  Share2,
+  GitFork,
+  Sparkles,
   Brain,
   Image,
   Briefcase,
+  Key,
+  Heart,
+  Globe,
+  Gamepad2,
+  BookOpen,
+  TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,99 +28,122 @@ import { Badge } from "@/components/ui/badge";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 
-const FEATURES = [
+const PRINCIPLES = [
+  {
+    icon: Key,
+    title: "Bring Your Own Keys",
+    description:
+      "Your API key is your identity and your compute. No subscriptions, no platform fees. You own your AI.",
+  },
+  {
+    icon: GitFork,
+    title: "Fork, Remix, Improve",
+    description:
+      "Every app is open. Clone it, remix it with AI, make it yours. Share your improvements back to the community.",
+  },
+  {
+    icon: Users,
+    title: "Built Together",
+    description:
+      "15+ apps built by the community. Anyone can contribute — developers write code, users remix with AI.",
+  },
+  {
+    icon: Sparkles,
+    title: "AI-Powered Everything",
+    description:
+      "Don't like a widget? Tell AI to change it. Describe what you want and it builds it. No coding required.",
+  },
   {
     icon: Blocks,
-    title: "Drag & Drop Widgets",
+    title: "Drag, Drop, Done",
     description:
-      "18+ widgets for AI chat, image generation, analytics, productivity, and more. Arrange your perfect layout.",
+      "19+ widgets across AI, productivity, creative, finance, and more. Arrange your perfect layout in seconds.",
   },
   {
-    icon: Store,
-    title: "Marketplace",
+    icon: Globe,
+    title: "Open & Free Forever",
     description:
-      "Browse, install, and trade dashboard templates and widgets. Free, paid, and tip-jar pricing.",
-  },
-  {
-    icon: Palette,
-    title: "Themes & Customization",
-    description:
-      "7 built-in themes from Midnight to Neon. Every dashboard is uniquely yours.",
-  },
-  {
-    icon: Share2,
-    title: "Export & Share",
-    description:
-      "Export your dashboard as JSON. Import configs from others. Trade setups with the community.",
-  },
-  {
-    icon: Zap,
-    title: "Creator Economy",
-    description:
-      "Become a creator. Publish your dashboards. Build a following. Earn from your configs.",
-  },
-  {
-    icon: LayoutDashboard,
-    title: "Multi-Dashboard",
-    description:
-      "One for work, one for creative projects, one for AI research. Switch between dashboards instantly.",
+      "No walled garden. Export your dashboards, share your configs, take your data anywhere. This is yours.",
   },
 ];
 
-const TEMPLATES = [
+const APPS = [
+  {
+    name: "News Aggregator",
+    description: "AI-curated daily digest from your favorite sources",
+    icon: Globe,
+    gradient: "from-amber-500 to-orange-600",
+    contributors: 4,
+  },
+  {
+    name: "Stock Broker",
+    description: "Portfolio tracking, market analysis, trade signals",
+    icon: TrendingUp,
+    gradient: "from-emerald-500 to-green-600",
+    contributors: 3,
+  },
+  {
+    name: "Mind Games",
+    description: "Chess, Go, Sudoku with AI opponents and training",
+    icon: Gamepad2,
+    gradient: "from-violet-500 to-purple-600",
+    contributors: 5,
+  },
+  {
+    name: "Learn Languages",
+    description: "AI conversation partner, vocab builder, immersion",
+    icon: BookOpen,
+    gradient: "from-blue-500 to-cyan-600",
+    contributors: 6,
+  },
   {
     name: "AI Power User",
-    description:
-      "Multi-model chat, prompt library, usage analytics, model comparison",
-    category: "AI & LLM",
+    description: "Multi-model chat, prompts, model comparison",
     icon: Brain,
-    gradient: "from-violet-500 to-purple-600",
-    widgets: ["AI Chat", "Prompt Library", "Model Comparison", "Usage Analytics", "API Keys"],
-    installs: "342",
-    rating: "4.7",
+    gradient: "from-pink-500 to-rose-600",
+    contributors: 8,
   },
   {
     name: "Creative Studio",
-    description:
-      "Image generation, writing assistant, music tools, inspiration feed",
-    category: "Creative",
+    description: "Image gen, writing tools, music, inspiration",
     icon: Image,
-    gradient: "from-pink-500 to-rose-600",
-    widgets: ["Image Generator", "Writing Assistant", "Music & Audio", "Style Presets", "Inspiration"],
-    installs: "215",
-    rating: "4.5",
+    gradient: "from-fuchsia-500 to-pink-600",
+    contributors: 7,
+  },
+  {
+    name: "Fitness Coach",
+    description: "Workouts, nutrition, progress tracking, AI coaching",
+    icon: Heart,
+    gradient: "from-red-500 to-rose-600",
+    contributors: 3,
   },
   {
     name: "Business Ops",
-    description:
-      "Meeting summarizer, email triage, document analyzer, task automation",
-    category: "Productivity",
+    description: "Meetings, email triage, docs, task automation",
     icon: Briefcase,
-    gradient: "from-blue-500 to-cyan-600",
-    widgets: ["Meeting Summary", "Email Triage", "Doc Analyzer", "Task Automation", "Calendar AI"],
-    installs: "178",
-    rating: "4.8",
+    gradient: "from-slate-500 to-zinc-600",
+    contributors: 5,
   },
 ];
 
 const STEPS = [
   {
     step: "01",
-    title: "Browse or Create",
+    title: "Paste Your API Key",
     description:
-      "Pick a template from the marketplace or start with a blank canvas.",
+      "Claude Code or Codex — your key is your login. No sign-up forms, no OAuth. Just paste and go.",
   },
   {
     step: "02",
-    title: "Add Widgets",
+    title: "Pick an App or Build One",
     description:
-      "Drag and drop from 18+ widgets — AI chat, analytics, creative tools, and more.",
+      "Install a community app, start from a blank canvas, or remix any existing app with AI.",
   },
   {
     step: "03",
-    title: "Customize & Share",
+    title: "Make It Yours",
     description:
-      "Apply themes, configure widgets, export your config, or publish to the marketplace.",
+      "Drag widgets, tweak settings, ask AI to modify anything. Then share your creation with the world.",
   },
 ];
 
@@ -127,34 +156,39 @@ export default function HomePage() {
         {/* Hero */}
         <section className="container py-16 sm:py-24 text-center">
           <Badge variant="secondary" className="mb-4">
-            18+ widgets &middot; 7 themes &middot; Marketplace
+            Open source &middot; Free forever &middot; Bring your own keys
           </Badge>
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl max-w-3xl mx-auto">
-            Your AI.{" "}
+          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl max-w-4xl mx-auto leading-tight">
+            Let&apos;s build the{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-pink-600 to-amber-500">
-              Your Dashboard.
-            </span>
+              future of AI
+            </span>{" "}
+            together
           </h1>
-          <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Build personalized AI dashboards with drag-and-drop widgets.
-            Install community templates. Trade and sell your configurations.
+          <p className="mt-5 text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            Open AI dashboards that anyone can build, remix, and share.
+            Bring your own API keys. Everything is free.
+            The community builds the apps — AI helps everyone contribute.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Button size="lg" render={<Link href="/marketplace" />}>
-              Browse Marketplace
+            <Button size="lg" render={<Link href="/login" />}>
+              Start Building
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
-            <Button size="lg" variant="outline" render={<Link href="/dashboard" />}>
-              Create Dashboard
+            <Button size="lg" variant="outline" render={<Link href="/community" />}>
+              Explore Apps
             </Button>
           </div>
+          <p className="mt-4 text-xs text-muted-foreground">
+            Just paste your Anthropic or OpenAI key. That&apos;s it.
+          </p>
         </section>
 
         {/* How it works */}
         <section className="border-y bg-muted/30">
           <div className="container py-16">
             <h2 className="text-2xl font-bold text-center mb-10">
-              How It Works
+              Three Steps. Zero Friction.
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {STEPS.map((step) => (
@@ -172,22 +206,22 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Features grid */}
+        {/* Principles */}
         <section className="container py-16">
           <h2 className="text-2xl font-bold text-center mb-2">
-            Everything You Need
+            How We Build
           </h2>
           <p className="text-center text-muted-foreground mb-10">
-            A complete platform for building, sharing, and trading AI dashboards.
+            An open platform where everyone contributes and everyone benefits.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {FEATURES.map((feature) => (
-              <Card key={feature.title} className="group hover:border-primary/30 transition-colors">
+            {PRINCIPLES.map((p) => (
+              <Card key={p.title} className="group hover:border-primary/30 transition-colors">
                 <CardHeader>
-                  <feature.icon className="h-8 w-8 mb-2 text-primary group-hover:scale-110 transition-transform" />
-                  <CardTitle className="text-base">{feature.title}</CardTitle>
+                  <p.icon className="h-8 w-8 mb-2 text-primary group-hover:scale-110 transition-transform" />
+                  <CardTitle className="text-base">{p.title}</CardTitle>
                   <CardDescription className="text-sm">
-                    {feature.description}
+                    {p.description}
                   </CardDescription>
                 </CardHeader>
               </Card>
@@ -195,80 +229,89 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Example Templates */}
+        {/* Community Apps */}
         <section className="border-y bg-muted/30">
           <div className="container py-16">
             <h2 className="text-2xl font-bold text-center mb-2">
-              Featured Templates
+              Community Apps
             </h2>
             <p className="text-center text-muted-foreground mb-10">
-              Pre-built dashboards ready to install and customize.
+              Built by people like you. Fork any app. Remix with AI. Make it yours.
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {TEMPLATES.map((template) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {APPS.map((app) => (
                 <Card
-                  key={template.name}
-                  className="overflow-hidden group hover:shadow-lg transition-shadow"
+                  key={app.name}
+                  className="overflow-hidden group hover:shadow-lg transition-all hover:-translate-y-0.5"
                 >
                   <div
-                    className={`h-36 bg-gradient-to-br ${template.gradient} flex items-center justify-center relative`}
+                    className={`h-24 bg-gradient-to-br ${app.gradient} flex items-center justify-center`}
                   >
-                    <template.icon className="h-14 w-14 text-white/80 group-hover:scale-110 transition-transform" />
-                    <div className="absolute top-3 right-3 flex gap-1">
-                      <Badge className="bg-white/20 text-white border-0 backdrop-blur-sm text-xs">
-                        {template.installs} installs
-                      </Badge>
-                    </div>
+                    <app.icon className="h-10 w-10 text-white/80 group-hover:scale-110 transition-transform" />
                   </div>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between mb-1">
-                      <Badge variant="secondary" className="text-xs">
-                        {template.category}
-                      </Badge>
-                      <span className="text-xs text-muted-foreground">
-                        ★ {template.rating}
-                      </span>
-                    </div>
-                    <CardTitle className="text-lg">{template.name}</CardTitle>
-                    <CardDescription className="text-sm">
-                      {template.description}
+                  <CardHeader className="p-4">
+                    <CardTitle className="text-sm">{app.name}</CardTitle>
+                    <CardDescription className="text-xs">
+                      {app.description}
                     </CardDescription>
-                  </CardHeader>
-                  <div className="px-6 pb-4">
-                    <div className="flex flex-wrap gap-1">
-                      {template.widgets.map((w) => (
-                        <Badge key={w} variant="outline" className="text-xs">
-                          {w}
-                        </Badge>
-                      ))}
+                    <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
+                      <Users className="h-3 w-3" />
+                      {app.contributors} contributors
                     </div>
-                  </div>
+                  </CardHeader>
                 </Card>
               ))}
+            </div>
+            <div className="text-center mt-8">
+              <Button variant="outline" render={<Link href="/community" />}>
+                See all apps
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
             </div>
           </div>
         </section>
 
-        {/* CTA */}
-        <section className="container py-20 text-center">
-          <div className="max-w-xl mx-auto">
-            <h2 className="text-3xl font-bold mb-3">
-              The future of AI is{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-pink-600">
-                personal
-              </span>
+        {/* Remix CTA */}
+        <section className="container py-16">
+          <div className="max-w-3xl mx-auto text-center">
+            <Sparkles className="h-10 w-10 text-violet-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-3">
+              Don&apos;t like something? Remix it.
             </h2>
-            <p className="text-muted-foreground mb-8">
-              Everyone will have their own AI dashboard. Start building yours
-              today.
+            <p className="text-muted-foreground mb-2 max-w-xl mx-auto">
+              Every widget, every app can be changed with a single prompt.
+              Tell AI what you want — it modifies the code, packages it, and installs
+              your personalized version. No coding required.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Button size="lg" render={<Link href="/login" />}>
-                Get Started — It&apos;s Free
-              </Button>
-              <Button size="lg" variant="outline" render={<Link href="/marketplace" />}>
-                Explore Marketplace
-              </Button>
+            <p className="text-sm text-muted-foreground italic">
+              &ldquo;Add stock prices to my news feed&rdquo; &mdash; done in 10 seconds.
+            </p>
+          </div>
+        </section>
+
+        {/* Final CTA */}
+        <section className="border-t bg-muted/30">
+          <div className="container py-20 text-center">
+            <div className="max-w-xl mx-auto">
+              <h2 className="text-3xl font-bold mb-3">
+                The future of AI is{" "}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-pink-600">
+                  something we build together
+                </span>
+              </h2>
+              <p className="text-muted-foreground mb-8">
+                Everyone gets an AI dashboard. Everyone can build one.
+                Bring your keys. Join the community.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <Button size="lg" render={<Link href="/login" />}>
+                  Start Building — It&apos;s Free
+                </Button>
+                <Button size="lg" variant="outline" render={<Link href="https://github.com/dashtop-ai/dashtop" />}>
+                  <GitFork className="mr-2 h-4 w-4" />
+                  View on GitHub
+                </Button>
+              </div>
             </div>
           </div>
         </section>

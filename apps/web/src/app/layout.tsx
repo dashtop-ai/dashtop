@@ -14,9 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Dashtop — AI Dashboard Marketplace",
+  title: "Dashtop — Build the Future of AI Together",
   description:
-    "Browse, customize, and trade personalized AI dashboards. Your command center for AI.",
+    "Open AI dashboards that anyone can build, remix, and share. Bring your own API keys. Everything is free.",
 };
 
 export default function RootLayout({

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { LayoutDashboard, Store, Menu, X } from "lucide-react";
+import { LayoutDashboard, Globe, Menu, X, GitFork } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserMenu } from "./user-menu";
 
@@ -37,8 +37,8 @@ export function SiteHeader() {
             href="/marketplace"
             className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
           >
-            <Store className="h-4 w-4" />
-            Marketplace
+            <Globe className="h-4 w-4" />
+            Explore Apps
           </Link>
           {user && (
             <Link
@@ -74,8 +74,8 @@ export function SiteHeader() {
             className="flex items-center gap-2 text-sm py-2 hover:text-foreground transition-colors"
             onClick={() => setMobileOpen(false)}
           >
-            <Store className="h-4 w-4" />
-            Marketplace
+            <Globe className="h-4 w-4" />
+            Explore Apps
           </Link>
           {user && (
             <Link
